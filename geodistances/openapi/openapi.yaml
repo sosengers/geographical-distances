@@ -1,0 +1,54 @@
+openapi: 3.0.0
+info:
+  description: Interface that models the operations available for the service that
+    computes geographical distances in ACMESky.
+  title: Geographical Distances
+  version: "1.0"
+servers:
+- url: http://localhost:3000
+paths:
+  /distance:
+    post:
+      description: |-
+        Calculates the distance between the given locations. Given addresses are first transformed into coordinates via geocoding, then the distance is computed and returned in kilometers.
+        API for: ACMESky
+      operationId: calculate_distance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Locations'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                description: Distance between the two addresses.
+                format: double
+                minimum: 0
+                type: number
+          description: OK
+        "400":
+          description: Bad Request
+      summary: calculateDistance
+      x-openapi-router-controller: geodistances.controllers.default_controller
+components:
+  schemas:
+    Locations:
+      description: Represents the two addresses to compute their distance. They are
+        not coordinates, they are addresses.
+      example:
+        address_1: address_1
+        address_2: address_2
+      properties:
+        address_1:
+          minLength: 1
+          type: string
+        address_2:
+          minLength: 1
+          type: string
+      required:
+      - address_1
+      - address_2
+      title: Locations
+      type: object
