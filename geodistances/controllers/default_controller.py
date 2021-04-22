@@ -1,33 +1,42 @@
 import connexion
-import six
 
 from geodistances.models.locations import Locations  # noqa: E501
-from geodistances import util
-import logging
 from math import radians, cos, sin, asin, sqrt
 from opencage.geocoder import OpenCageGeocode
 from os import environ
+import sys
+
 
 def get_coordinates_from_address(address: str):
+    """
+    Performs the geocoding process on address.
+    @param address: string representing an address.
+    @return: the latitude and longitude of the best match found for the given address.
+    """
+
+    if "OPEN_CAGE_API_KEY" not in environ:
+        print("Environment variable OPEN_CAGE_API_KEY was not set.")
+        sys.exit(1)
     key = environ.get("OPEN_CAGE_API_KEY")
-    gecoder = OpenCageGeocode(key)
-    results = gecoder.geocode(address)
-    return results[0]['geometry']['lat'], results[0]['geometry']['lng'],
+    api = OpenCageGeocode(key)
+    results = api.geocode(address)
+    return results[0]['geometry']['lat'], results[0]['geometry']['lng']
+
 
 def haversine(lon1, lat1, lon2, lat2):
     """
-    Calculate the great circle distance between two points
-    on the earth (specified in decimal degrees)
+    Calculate the [Haversine distance](https://en.wikipedia.org/wiki/Haversine_formula)
+    between point P1 and P2.
     """
-    # convert decimal degrees to radians 
+    # Converting longitude and latitude of the two points from degrees to radians.
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
 
-    # haversine formula 
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    # Applying the formula
+    d_lon = lon2 - lon1
+    d_lat = lat2 - lat1
+    a = sin(d_lat/2)**2 + cos(lat1) * cos(lat2) * sin(d_lon/2)**2
     c = 2 * asin(sqrt(a))
-    r = 6371 # Radius of earth in kilometers.
+    r = 6371  # Approximated radius of earth in kilometers.
     return c * r
 
 
